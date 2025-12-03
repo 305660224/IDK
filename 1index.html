@@ -1,0 +1,1855 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <title>Registro de Visitantes - SINAC</title>
+
+    <style>
+        :root {
+            --sinac-green: #4CAF50;
+            --sinac-green-dark: #3D8A40;
+        }
+
+        /* fondo (opción C) */
+        body {
+            background: url("imagenes/fondo_bosque.png") no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            padding: 0;
+        }
+
+        .bg-overlay {
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(4px);
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+
+        .navbar-brand img {
+            height: 36px;
+            width: auto;
+            margin-right: 10px;
+        }
+
+        .page-title {
+            font-weight: 800;
+            color: var(--sinac-green-dark);
+            text-align: center;
+            margin-bottom: 18px;
+        }
+
+        .side-panel .info-box {
+            background: #fff;
+            border-radius: 10px;
+            padding: 14px;
+            text-align: left;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, .06);
+            margin-bottom: 14px;
+        }
+
+        .side-panel .info-box .label {
+            font-weight: 700;
+            color: var(--sinac-green-dark);
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .status-ok {
+            background: #e9f7ee;
+            color: #166534;
+            border: 1px solid rgba(21, 101, 52, .08);
+        }
+
+        .status-warn {
+            background: #fff4e6;
+            color: #7a3b00;
+            border: 1px solid rgba(122, 59, 0, .06);
+        }
+
+        .status-bad {
+            background: #ffeeee;
+            color: #8b0000;
+            border: 1px solid rgba(139, 0, 0, .06);
+        }
+
+        .form-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, .08);
+            padding: 22px;
+        }
+
+        .visitantes-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, .08);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .visitantes-list {
+            overflow-y: auto;
+            max-height: 55vh;
+            margin-bottom: 12px;
+        }
+
+        .visitante-item {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 8px 6px;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        .visitante-item img {
+            width: 48px;
+            height: 48px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid #eee;
+        }
+
+        .visitante-info small {
+            color: #666;
+        }
+
+        .home-btn {
+            font-size: 1.6rem;
+            color: var(--sinac-green-dark);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mt-small {
+            margin-top: 8px;
+        }
+
+        /* Payment fields area hidden by default */
+        .payment-area {
+            margin-top: 12px;
+        }
+
+        .payment-area .card-fields,
+        .payment-area .sinpe-fields {
+            display: none;
+        }
+
+        .place-sinpe {
+            background: #f8fff8;
+            border: 1px dashed rgba(76, 175, 80, 0.25);
+            padding: 12px;
+            border-radius: 8px;
+            color: var(--sinac-green-dark);
+            font-weight: 700;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        /* Modal de selección de parque */
+        .park-modal .modal-content {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .park-modal .modal-header {
+            background-color: var(--sinac-green);
+            color: white;
+            border-bottom: none;
+        }
+
+        .park-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .park-card:hover {
+            border-color: var(--sinac-green);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .park-card.selected {
+            border-color: var(--sinac-green);
+            background-color: #f8fff8;
+        }
+
+        .park-name {
+            font-weight: 700;
+            color: var(--sinac-green-dark);
+            margin-bottom: 5px;
+        }
+
+        .park-features {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .park-description {
+            font-size: 0.9rem;
+            color: #444;
+        }
+
+        /* small tweaks for responsive */
+        @media (max-width: 991px) {
+            .visitantes-card {
+                margin-top: 18px;
+            }
+        }
+
+        /* Checkboxes deshabilitados */
+        .form-check-input:disabled {
+            background-color: #e9ecef;
+            opacity: 1;
+        }
+
+        .form-check-label.disabled {
+            color: #6c757d;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-overlay">
+        <div class="container py-4">
+
+            <!-- NAVBAR -->
+            <nav class="navbar navbar-expand-lg bg-white shadow-sm">
+                <div class="container-fluid">
+
+                    <a class="navbar-brand d-flex align-items-center" href="index.html">
+                        <img src="imagenes/sinac_logo.png" style="height:33px;" class="me-2">
+                        <span class="fw-semibold text-sinac fs-5">SINAC</span>
+                    </a>
+
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <div class="collapse navbar-collapse" id="navbarNav">
+
+                        <ul class="navbar-nav ms-3">
+
+                            <li class="nav-item">
+                                <a class="nav-link" href="index.html">Inicio</a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link" href="Nosotros.html">Nosotros</a>
+                            </li>
+                            <!-- DROPDOWN (ÚNICO DROPDOWN) -->
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                    Áreas de Conservación
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="Áreas de Conservación-pag.html">Ver Todas las
+                                            Áreas</a></li>
+                                    <li><a class="dropdown-item" href="Áreas de Conservación-pag.html?area=ACAHN">Arenal
+                                            Huetar Norte</a></li>
+                                    <li><a class="dropdown-item" href="Áreas de Conservación-pag.html?area=ACAT">Arenal
+                                            Tempisque</a></li>
+                                    <li><a class="dropdown-item"
+                                            href="Áreas de Conservación-pag.html?area=ACCVC">Cordillera Volcánica
+                                            Central</a></li>
+                                    <li><a class="dropdown-item"
+                                            href="Áreas de Conservación-pag.html?area=ACG">Guanacaste</a></li>
+                                    <li><a class="dropdown-item" href="Áreas de Conservación-pag.html?area=ACLAC">La
+                                            Amistad Caribe</a></li>
+                                    <li><a class="dropdown-item" href="Áreas de Conservación-pag.html?area=ACLAP">La
+                                            Amistad Pacífico</a></li>
+                                    <li><a class="dropdown-item" href="Áreas de Conservación-pag.html?area=ACMIC">Isla
+                                            del Coco</a></li>
+                                    <li><a class="dropdown-item"
+                                            href="Áreas de Conservación-pag.html?area=ACOSA">Osa</a></li>
+                                    <li><a class="dropdown-item"
+                                            href="Áreas de Conservación-pag.html?area=ACOPAC">Pacífico Central</a></li>
+                                    <li><a class="dropdown-item"
+                                            href="Áreas de Conservación-pag.html?area=ACT">Tempisque</a></li>
+                                    <li><a class="dropdown-item"
+                                            href="Áreas de Conservación-pag.html?area=ACTO">Tortuguero</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="Servicios.html">Trámites y Servicios</a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link" href="Noticias.html">Noticias</a>
+                            </li>
+
+                            <!-- Visible solo si NO hay sesión -->
+                            <li class="nav-item" id="navLogin">
+                                <a class="nav-link" href="Login.html">Iniciar Sesión</a>
+                            </li>
+
+                            <!-- Visible cuando SÍ hay sesión -->
+                            <li class="nav-item" id="navUsuario" style="display:none;">
+                                <a class="nav-link disabled fw-semibold" href="#"></a>
+                            </li>
+
+                            <!-- Botón de cerrar sesión -->
+                            <li class="nav-item" id="navLogout" style="display:none;">
+                                <a class="nav-link text-danger" href="#">Cerrar Sesión</a>
+                            </li>
+
+                        </ul>
+
+                        <form class="d-flex ms-auto" role="search">
+                            <input class="form-control me-2" type="search" placeholder="Buscar">
+                            <button class="btn btn-outline-success" type="submit">Buscar</button>
+                        </form>
+
+                    </div>
+                </div>
+            </nav>
+
+            <!-- TÍTULO PRINCIPAL -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="page-title m-0">Registro de Visitantes</h2>
+            </div>
+
+            <div class="row g-4">
+                <!-- IZQUIERDA: características del sitio / sendero -->
+                <div class="col-lg-3">
+                    <div class="side-panel">
+                        <div class="side-panel">
+                            <div class="info-box">
+                                <span class="label" id="park-name">Seleccione un Parque</span>
+
+                                <div id="park-description" class="mb-3">
+                                    <small class="text-muted">Por favor seleccione un parque nacional para ver sus
+                                        características</small>
+                                </div>
+
+                                <span class="label">Características del Sendero</span>
+
+                                <div class="form-check mt-1">
+                                    <input class="form-check-input" type="checkbox" value="" id="chkAdaptado" disabled>
+                                    <label class="form-check-label disabled" for="chkAdaptado">Sendero adaptado</label>
+                                </div>
+
+                                <div class="form-check mt-1">
+                                    <input class="form-check-input" type="checkbox" value="" id="chkBajotecho" disabled>
+                                    <label class="form-check-label disabled" for="chkBajotecho">Bajo techo</label>
+                                </div>
+
+                                <div class="form-check mt-1">
+                                    <input class="form-check-input" type="checkbox" value="" id="chkRampa" disabled>
+                                    <label class="form-check-label disabled" for="chkRampa">Acceso con rampa</label>
+                                </div>
+
+                                <div class="form-check mt-1">
+                                    <input class="form-check-input" type="checkbox" value="" id="chkLargo" disabled>
+                                    <label class="form-check-label disabled" for="chkLargo">Sendero de largo
+                                        recorrido</label>
+                                </div>
+
+                                <hr class="mt-3 mb-2">
+
+                                <div id="site-suitability" class="mb-2">
+                                    <!-- Mensaje dinámico -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CENTRO: formulario registro -->
+                <div class="col-lg-6">
+                    <div class="form-card">
+                        <h5 style="color:var(--sinac-green-dark)">Ingrese los datos del visitante</h5>
+                        <hr>
+
+                        <div class="mb-2">
+                            <label class="form-label">Nombre completo</label>
+                            <input id="inputNombre" class="form-control" type="text" placeholder="Ej: Carlos Rodríguez">
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label">Cédula o Pasaporte</label>
+                            <input id="inputId" class="form-control" type="text" placeholder="Ej: 1-2345-6789">
+                        </div>
+<!-- Agregar después del campo de cédula/pasaporte -->
+<div class="mb-2">
+    <label class="form-label">Fecha de Nacimiento</label>
+    <input id="inputFechaNacimiento" class="form-control" type="date">
+</div>
+
+<div class="mb-2">
+    <label class="form-label">Fecha de Reserva</label>
+    <input id="inputFechaReserva" class="form-control" type="date" min="">
+</div>
+
+<!-- Agregar antes del método de pago -->
+<div class="mb-2">
+    <label class="form-label">Precio de Reserva</label>
+    <div class="d-flex justify-content-between align-items-center p-2 border rounded bg-light">
+        <span id="precioReserva">₡0</span>
+        <small id="categoriaPrecio" class="text-muted"></small>
+    </div>
+</div>
+                        <div class="mb-2">
+                            <label class="form-label">Método de pago</label>
+                            <select id="inputPago" class="form-select">
+                                <option value="">Seleccionar...</option>
+                                <option value="Tarjeta">Tarjeta</option>
+                                <option value="SINPE">SINPE</option>
+                            </select>
+                        </div>
+
+                        <!-- Payment dynamic area -->
+                        <div class="payment-area">
+                            <!-- Tarjeta fields -->
+                            <div class="card-fields">
+                                <label class="form-label mt-2">Número de tarjeta</label>
+                                <input id="cardNumber" class="form-control" type="text"
+                                    placeholder="1234 5678 9012 3456" maxlength="19">
+
+                                <div class="row mt-2 g-2">
+                                    <div class="col-7">
+                                        <label class="form-label">Fecha Vencimiento</label>
+                                        <input id="cardExpiry" class="form-control" type="text" placeholder="MM/AA"
+                                            maxlength="5">
+                                    </div>
+                                    <div class="col-5">
+                                        <label class="form-label">CVV</label>
+                                        <input id="cardCvv" class="form-control" type="text" placeholder="123"
+                                            maxlength="4">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SINPE fields -->
+                            <div class="sinpe-fields">
+                                <div class="mt-2">
+                                    <label class="form-label">Realizar pago SINPE al siguiente número:</label>
+                                    <div class="place-sinpe">6450-8899</div>
+                                    <small class="text-muted d-block mt-2">Realice la transferencia y confirme el
+                                        registro</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button id="btnRegistrar" class="btn btn-success">Registrar visitante</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DERECHA: lista de registrados -->
+                <div class="col-lg-3">
+                    <div class="visitantes-card">
+                        <h6 style="color:var(--sinac-green-dark)">Confirmados</h6>
+                        <hr>
+                        <div class="visitantes-list" id="listaVisitantes" aria-live="polite">
+                            <!-- Se van añadiendo aquí los visitantes -->
+                        </div>
+
+                        <div>
+                            <button id="btnContinuar" class="btn btn-outline-success w-100" disabled>Continuar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para selección de parque nacional -->
+    <div class="modal fade park-modal" id="parkModal" tabindex="-1" aria-labelledby="parkModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="parkModalLabel">Seleccione un Parque Nacional</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row" id="park-list">
+                        <!-- Los parques se cargarán aquí dinámicamente -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" id="confirmPark" disabled>
+                        Confirmar Selección
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+<!-- Reemplazar el modal de pago completo con esta versión corregida -->
+<!-- Modal para confirmación de pago -->
+<div class="modal fade park-modal" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="paymentModalLabel">Confirmación de Pago</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Resumen de la reserva -->
+                <div class="info-box mb-3">
+                    <h6 style="color:var(--sinac-green-dark)">Resumen de la Reserva</h6>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <span>Parque Nacional:</span>
+                        <strong id="resumenParque">-</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Fecha de Reserva:</span>
+                        <strong id="resumenFecha">-</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Cantidad de Visitantes:</span>
+                        <strong id="resumenCantidad">0</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Subtotal Entradas:</span>
+                        <strong id="resumenSubtotal">₡0</strong>
+                    </div>
+                </div>
+                
+                <!-- Servicios adicionales -->
+                <div class="info-box mb-3">
+                    <h6 style="color:var(--sinac-green-dark)">Servicios Adicionales</h6>
+                    <hr>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" value="transporte" id="servicioTransporte">
+                        <label class="form-check-label" for="servicioTransporte">
+                            Transporte al Parque - ₡5,000
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" value="guia" id="servicioGuia">
+                        <label class="form-check-label" for="servicioGuia">
+                            Guía Turístico - ₡10,000
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" value="alimentacion" id="servicioAlimentacion">
+                        <label class="form-check-label" for="servicioAlimentacion">
+                            Alimentación (Box Lunch) - ₡3,500 por persona
+                        </label>
+                    </div>
+                    <!-- Selector de cantidad de almuerzos -->
+                    <div id="cantidadAlmuerzosContainer" style="display: none;" class="mt-2">
+                        <label class="form-label">¿Cuántas personas quieren almuerzo?</label>
+                        <select id="cantidadAlmuerzos" class="form-select">
+                            <option value="0">0 personas</option>
+                            <!-- Las opciones se generarán dinámicamente -->
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Desglose del total -->
+                <div class="info-box mb-3">
+                    <h6 style="color:var(--sinac-green-dark)">Desglose del Total</h6>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <span>Entradas:</span>
+                        <strong id="desgloseEntradas">₡0</strong>
+                    </div>
+                    <div class="d-flex justify-content-between" id="desgloseTransporte" style="display: none;">
+                        <span>Transporte:</span>
+                        <strong>₡5,000</strong>
+                    </div>
+                    <div class="d-flex justify-content-between" id="desgloseGuia" style="display: none;">
+                        <span>Guía Turístico:</span>
+                        <strong>₡10,000</strong>
+                    </div>
+                    <div class="d-flex justify-content-between" id="desgloseAlmuerzos" style="display: none;">
+                        <span>Almuerzos (<span id="cantidadAlmuerzosTexto">0</span> personas):</span>
+                        <strong id="totalAlmuerzos">₡0</strong>
+                    </div>
+                </div>
+                
+                <!-- Total a pagar -->
+                <div class="info-box">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 style="color:var(--sinac-green-dark)">Total a Pagar:</h6>
+                        <h4 style="color:var(--sinac-green-dark)" id="totalPagar">₡0</h4>
+                    </div>
+                    <hr>
+                    <div id="metodoPagoResumen" class="mb-2">
+                        <!-- Se mostrará el método de pago seleccionado -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="btnPagar">Realizar Pago</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Reemplazar todo el script del modal de pago con esta versión corregida
+
+// Precios de servicios adicionales
+const PRECIOS_SERVICIOS = {
+    transporte: 5000,
+    guia: 10000,
+    alimentacion: 3500  // Precio por persona
+};
+
+// Variables para servicios
+let serviciosSeleccionados = {};
+let totalServicios = 0;
+let cantidadAlmuerzos = 0;
+
+// Modificar el evento del botón Continuar
+document.getElementById('btnContinuar').addEventListener('click', function() {
+    // Validar que no haya cédulas repetidas y que todos los campos estén completos
+    if (!validarDatosVisitantes()) {
+        return;
+    }
+    
+    // Cargar datos en el modal de pago
+    cargarDatosPago();
+    
+    // Mostrar modal de pago
+    const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
+    paymentModal.show();
+});
+
+// Función para validar datos de visitantes
+function validarDatosVisitantes() {
+    const visitantes = document.getElementById('listaVisitantes').children;
+    
+    if (visitantes.length === 0) {
+        alert('No hay visitantes registrados.');
+        return false;
+    }
+    
+    // Verificar que no haya cédulas repetidas
+    const cedulas = new Set();
+    for (let i = 0; i < visitantes.length; i++) {
+        const cedula = visitantes[i].dataset.cedula;
+        if (cedulas.has(cedula)) {
+            alert('Existen cédulas repetidas en la lista de visitantes.');
+            return false;
+        }
+        cedulas.add(cedula);
+        
+        // Verificar que cada visitante tenga cédula y fecha de nacimiento
+        if (!cedula || cedula.trim() === '') {
+            alert('Existen visitantes sin cédula o pasaporte.');
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+// Función para cargar datos en el modal de pago
+function cargarDatosPago() {
+    // Actualizar información del parque
+    document.getElementById('resumenParque').textContent = parqueSeleccionado ? parqueSeleccionado.nombre : 'No seleccionado';
+    
+    // Actualizar fecha de reserva
+    const fechaReserva = document.getElementById('inputFechaReserva').value;
+    document.getElementById('resumenFecha').textContent = fechaReserva ? new Date(fechaReserva).toLocaleDateString('es-CR') : 'No seleccionada';
+    
+    // Actualizar cantidad de visitantes
+    const cantidadVisitantes = document.getElementById('listaVisitantes').children.length;
+    document.getElementById('resumenCantidad').textContent = cantidadVisitantes;
+    
+    // Actualizar subtotal - ESTA ES LA CORRECCIÓN IMPORTANTE
+    document.getElementById('resumenSubtotal').textContent = '₡' + subtotal.toLocaleString('es-CR');
+    document.getElementById('desgloseEntradas').textContent = '₡' + subtotal.toLocaleString('es-CR');
+    
+    // Actualizar método de pago
+    const metodoPago = document.getElementById('inputPago').value;
+    let textoMetodo = '';
+    if (metodoPago === 'Tarjeta') {
+        textoMetodo = 'Pago con Tarjeta';
+    } else if (metodoPago === 'SINPE') {
+        textoMetodo = 'Pago con SINPE Móvil';
+    }
+    document.getElementById('metodoPagoResumen').innerHTML = `<strong>Método de pago:</strong> ${textoMetodo}`;
+    
+    // Generar opciones para cantidad de almuerzos
+    const selectAlmuerzos = document.getElementById('cantidadAlmuerzos');
+    selectAlmuerzos.innerHTML = '<option value="0">0 personas</option>';
+    for (let i = 1; i <= cantidadVisitantes; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = i + ' persona' + (i > 1 ? 's' : '');
+        selectAlmuerzos.appendChild(option);
+    }
+    
+    // Resetear servicios seleccionados
+    serviciosSeleccionados = {};
+    totalServicios = 0;
+    cantidadAlmuerzos = 0;
+    document.getElementById('servicioTransporte').checked = false;
+    document.getElementById('servicioGuia').checked = false;
+    document.getElementById('servicioAlimentacion').checked = false;
+    document.getElementById('cantidadAlmuerzosContainer').style.display = 'none';
+    document.getElementById('desgloseTransporte').style.display = 'none';
+    document.getElementById('desgloseGuia').style.display = 'none';
+    document.getElementById('desgloseAlmuerzos').style.display = 'none';
+    
+    // Actualizar total - ESTO ES CLAVE
+    actualizarTotalPago();
+}
+
+function actualizarTotalPago() {
+    // Calcular total de servicios
+    totalServicios = 0;
+    
+    if (serviciosSeleccionados.transporte) {
+        totalServicios += PRECIOS_SERVICIOS.transporte;
+        document.getElementById('desgloseTransporte').style.display = 'flex';
+    } else {
+        document.getElementById('desgloseTransporte').style.display = 'none';
+    }
+    
+    if (serviciosSeleccionados.guia) {
+        totalServicios += PRECIOS_SERVICIOS.guia;
+        document.getElementById('desgloseGuia').style.display = 'flex';
+    } else {
+        document.getElementById('desgloseGuia').style.display = 'none';
+    }
+    
+    if (serviciosSeleccionados.alimentacion && cantidadAlmuerzos > 0) {
+        const totalAlmuerzos = PRECIOS_SERVICIOS.alimentacion * cantidadAlmuerzos;
+        totalServicios += totalAlmuerzos;
+        document.getElementById('desgloseAlmuerzos').style.display = 'flex';
+        document.getElementById('cantidadAlmuerzosTexto').textContent = cantidadAlmuerzos;
+        document.getElementById('totalAlmuerzos').textContent = '₡' + totalAlmuerzos.toLocaleString('es-CR');
+    } else {
+        document.getElementById('desgloseAlmuerzos').style.display = 'none';
+    }
+    
+    // Calcular total general (entradas + servicios) - ESTA ES LA PARTE MÁS IMPORTANTE
+    const totalGeneral = subtotal + totalServicios;
+    document.getElementById('totalPagar').textContent = '₡' + totalGeneral.toLocaleString('es-CR');
+}
+
+// Eventos para servicios adicionales
+document.getElementById('servicioTransporte').addEventListener('change', function() {
+    if (this.checked) {
+        serviciosSeleccionados.transporte = PRECIOS_SERVICIOS.transporte;
+    } else {
+        delete serviciosSeleccionados.transporte;
+    }
+    actualizarTotalPago();
+});
+
+document.getElementById('servicioGuia').addEventListener('change', function() {
+    if (this.checked) {
+        serviciosSeleccionados.guia = PRECIOS_SERVICIOS.guia;
+    } else {
+        delete serviciosSeleccionados.guia;
+    }
+    actualizarTotalPago();
+});
+
+document.getElementById('servicioAlimentacion').addEventListener('change', function() {
+    if (this.checked) {
+        serviciosSeleccionados.alimentacion = PRECIOS_SERVICIOS.alimentacion;
+        document.getElementById('cantidadAlmuerzosContainer').style.display = 'block';
+    } else {
+        delete serviciosSeleccionados.alimentacion;
+        document.getElementById('cantidadAlmuerzosContainer').style.display = 'none';
+        cantidadAlmuerzos = 0;
+    }
+    actualizarTotalPago();
+});
+
+// Evento para cambiar la cantidad de almuerzos
+document.getElementById('cantidadAlmuerzos').addEventListener('change', function() {
+    cantidadAlmuerzos = parseInt(this.value);
+    actualizarTotalPago();
+});
+
+// Evento para el botón de pagar
+document.getElementById('btnPagar').addEventListener('click', function() {
+    const metodoPago = document.getElementById('inputPago').value;
+    let mensaje = '';
+    
+    if (metodoPago === 'Tarjeta') {
+        mensaje = 'El cobro con tarjeta se ha realizado con éxito.';
+    } else if (metodoPago === 'SINPE') {
+        mensaje = 'La transacción SINPE Móvil se ha verificado correctamente.';
+    }
+    
+    document.getElementById('mensajeExito').textContent = mensaje;
+    
+    // Cerrar modal de pago
+    const paymentModal = bootstrap.Modal.getInstance(document.getElementById('paymentModal'));
+    paymentModal.hide();
+    
+    // Mostrar modal de éxito después de un breve delay
+    setTimeout(function() {
+        const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+        successModal.show();
+    }, 500);
+});
+
+// Cerrar el modal de éxito y limpiar el formulario
+document.getElementById('successModal').addEventListener('hidden.bs.modal', function() {
+    // Limpiar lista de visitantes
+    document.getElementById('listaVisitantes').innerHTML = '';
+    
+    // Resetear variables
+    subtotal = 0;
+    cedulasRegistradas.clear();
+    metodoPagoBloqueado = false;
+    fechaReservaBloqueada = false;
+    
+    // Actualizar subtotal en la interfaz
+    actualizarSubtotal();
+    
+    // Deshabilitar botón continuar
+    document.getElementById('btnContinuar').disabled = true;
+    
+    // Habilitar método de pago y fecha de reserva
+    document.getElementById('inputPago').disabled = false;
+    document.getElementById('inputFechaReserva').disabled = false;
+    
+    // Resetear método de pago
+    document.getElementById('inputPago').value = '';
+    updatePaymentArea();
+});
+</script>
+
+<!-- Modal de confirmación de pago exitoso -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="successModalLabel">Pago Exitoso</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+                <p class="mt-3" id="mensajeExito">Su pago ha sido procesado exitosamente.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success w-100" data-bs-dismiss="modal">Aceptar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Agregar después del código existente
+
+// Precios de servicios adicionales
+const PRECIOS_SERVICIOS = {
+    transporte: 5000,
+    guia: 10000,
+    alimentacion: 3500
+};
+
+// Variables para servicios
+let serviciosSeleccionados = {};
+let totalServicios = 0;
+
+// Modificar el evento del botón Continuar
+document.getElementById('btnContinuar').addEventListener('click', function() {
+    // Validar que no haya cédulas repetidas y que todos los campos estén completos
+    if (!validarDatosVisitantes()) {
+        return;
+    }
+    
+    // Cargar datos en el modal de pago
+    cargarDatosPago();
+    
+    // Mostrar modal de pago
+    const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
+    paymentModal.show();
+});
+
+// Función para validar datos de visitantes
+function validarDatosVisitantes() {
+    const visitantes = document.getElementById('listaVisitantes').children;
+    
+    if (visitantes.length === 0) {
+        alert('No hay visitantes registrados.');
+        return false;
+    }
+    
+    // Verificar que no haya cédulas repetidas
+    const cedulas = new Set();
+    for (let i = 0; i < visitantes.length; i++) {
+        const cedula = visitantes[i].dataset.cedula;
+        if (cedulas.has(cedula)) {
+            alert('Existen cédulas repetidas en la lista de visitantes.');
+            return false;
+        }
+        cedulas.add(cedula);
+        
+        // Verificar que cada visitante tenga cédula y fecha de nacimiento
+        if (!cedula || cedula.trim() === '') {
+            alert('Existen visitantes sin cédula o pasaporte.');
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+// Función para cargar datos en el modal de pago
+function cargarDatosPago() {
+    // Actualizar información del parque
+    document.getElementById('resumenParque').textContent = parqueSeleccionado ? parqueSeleccionado.nombre : 'No seleccionado';
+    
+    // Actualizar fecha de reserva
+    const fechaReserva = document.getElementById('inputFechaReserva').value;
+    document.getElementById('resumenFecha').textContent = fechaReserva ? new Date(fechaReserva).toLocaleDateString('es-CR') : 'No seleccionada';
+    
+    // Actualizar cantidad de visitantes
+    const cantidadVisitantes = document.getElementById('listaVisitantes').children.length;
+    document.getElementById('resumenCantidad').textContent = cantidadVisitantes;
+    
+    // Actualizar subtotal - ESTA ES LA CORRECCIÓN IMPORTANTE
+    document.getElementById('resumenSubtotal').textContent = '₡' + subtotal.toLocaleString('es-CR');
+    document.getElementById('desgloseEntradas').textContent = '₡' + subtotal.toLocaleString('es-CR');
+    
+    // Actualizar método de pago
+    const metodoPago = document.getElementById('inputPago').value;
+    let textoMetodo = '';
+    if (metodoPago === 'Tarjeta') {
+        textoMetodo = 'Pago con Tarjeta';
+    } else if (metodoPago === 'SINPE') {
+        textoMetodo = 'Pago con SINPE Móvil';
+    }
+    document.getElementById('metodoPagoResumen').innerHTML = `<strong>Método de pago:</strong> ${textoMetodo}`;
+    
+    // Generar opciones para cantidad de almuerzos
+    const selectAlmuerzos = document.getElementById('cantidadAlmuerzos');
+    selectAlmuerzos.innerHTML = '<option value="0">0 personas</option>';
+    for (let i = 1; i <= cantidadVisitantes; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = i + ' persona' + (i > 1 ? 's' : '');
+        selectAlmuerzos.appendChild(option);
+    }
+    
+    // Resetear servicios seleccionados
+    serviciosSeleccionados = {};
+    totalServicios = 0;
+    cantidadAlmuerzos = 0;
+    document.getElementById('servicioTransporte').checked = false;
+    document.getElementById('servicioGuia').checked = false;
+    document.getElementById('servicioAlimentacion').checked = false;
+    document.getElementById('cantidadAlmuerzosContainer').style.display = 'none';
+    document.getElementById('desgloseTransporte').style.display = 'none';
+    document.getElementById('desgloseGuia').style.display = 'none';
+    document.getElementById('desgloseAlmuerzos').style.display = 'none';
+    
+    // Actualizar total - ESTO ES CLAVE
+    actualizarTotalPago();
+}
+
+function actualizarTotalPago() {
+    // Calcular total de servicios
+    totalServicios = 0;
+    
+    if (serviciosSeleccionados.transporte) {
+        totalServicios += PRECIOS_SERVICIOS.transporte;
+        document.getElementById('desgloseTransporte').style.display = 'flex';
+    } else {
+        document.getElementById('desgloseTransporte').style.display = 'none';
+    }
+    
+    if (serviciosSeleccionados.guia) {
+        totalServicios += PRECIOS_SERVICIOS.guia;
+        document.getElementById('desgloseGuia').style.display = 'flex';
+    } else {
+        document.getElementById('desgloseGuia').style.display = 'none';
+    }
+    
+    if (serviciosSeleccionados.alimentacion && cantidadAlmuerzos > 0) {
+        const totalAlmuerzos = PRECIOS_SERVICIOS.alimentacion * cantidadAlmuerzos;
+        totalServicios += totalAlmuerzos;
+        document.getElementById('desgloseAlmuerzos').style.display = 'flex';
+        document.getElementById('cantidadAlmuerzosTexto').textContent = cantidadAlmuerzos;
+        document.getElementById('totalAlmuerzos').textContent = '₡' + totalAlmuerzos.toLocaleString('es-CR');
+    } else {
+        document.getElementById('desgloseAlmuerzos').style.display = 'none';
+    }
+    
+    // Calcular total general (entradas + servicios) - ESTA ES LA PARTE MÁS IMPORTANTE
+    const totalGeneral = subtotal + totalServicios;
+    document.getElementById('totalPagar').textContent = '₡' + totalGeneral.toLocaleString('es-CR');
+}
+
+// Eventos para servicios adicionales
+document.getElementById('servicioTransporte').addEventListener('change', function() {
+    if (this.checked) {
+        serviciosSeleccionados.transporte = PRECIOS_SERVICIOS.transporte;
+        totalServicios += PRECIOS_SERVICIOS.transporte;
+    } else {
+        delete serviciosSeleccionados.transporte;
+        totalServicios -= PRECIOS_SERVICIOS.transporte;
+    }
+    actualizarTotalPago();
+});
+
+document.getElementById('servicioGuia').addEventListener('change', function() {
+    if (this.checked) {
+        serviciosSeleccionados.guia = PRECIOS_SERVICIOS.guia;
+        totalServicios += PRECIOS_SERVICIOS.guia;
+    } else {
+        delete serviciosSeleccionados.guia;
+        totalServicios -= PRECIOS_SERVICIOS.guia;
+    }
+    actualizarTotalPago();
+});
+
+document.getElementById('servicioAlimentacion').addEventListener('change', function() {
+    if (this.checked) {
+        serviciosSeleccionados.alimentacion = PRECIOS_SERVICIOS.alimentacion;
+        totalServicios += PRECIOS_SERVICIOS.alimentacion;
+    } else {
+        delete serviciosSeleccionados.alimentacion;
+        totalServicios -= PRECIOS_SERVICIOS.alimentacion;
+    }
+    actualizarTotalPago();
+});
+
+// Evento para el botón de pagar
+document.getElementById('btnPagar').addEventListener('click', function() {
+    const metodoPago = document.getElementById('inputPago').value;
+    let mensaje = '';
+    
+    if (metodoPago === 'Tarjeta') {
+        mensaje = 'El cobro con tarjeta se ha realizado con éxito.';
+    } else if (metodoPago === 'SINPE') {
+        mensaje = 'La transacción SINPE Móvil se ha verificado correctamente.';
+    }
+    
+    document.getElementById('mensajeExito').textContent = mensaje;
+    
+    // Cerrar modal de pago
+    const paymentModal = bootstrap.Modal.getInstance(document.getElementById('paymentModal'));
+    paymentModal.hide();
+    
+    // Mostrar modal de éxito después de un breve delay
+    setTimeout(function() {
+        const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+        successModal.show();
+    }, 500);
+});
+
+// Cerrar el modal de éxito y limpiar el formulario
+document.getElementById('successModal').addEventListener('hidden.bs.modal', function() {
+    // Limpiar lista de visitantes
+    document.getElementById('listaVisitantes').innerHTML = '';
+    
+    // Resetear variables
+    subtotal = 0;
+    cedulasRegistradas.clear();
+    metodoPagoBloqueado = false;
+    fechaReservaBloqueada = false;
+    
+    // Actualizar subtotal en la interfaz
+    actualizarSubtotal();
+    
+    // Deshabilitar botón continuar
+    document.getElementById('btnContinuar').disabled = true;
+    
+    // Habilitar método de pago y fecha de reserva
+    document.getElementById('inputPago').disabled = false;
+    document.getElementById('inputFechaReserva').disabled = false;
+    
+    // Resetear método de pago
+    document.getElementById('inputPago').value = '';
+    updatePaymentArea();
+});
+</script>
+    <script>
+        // Cerrar el modal automáticamente al confirmar
+        document.getElementById("confirmPark").addEventListener("click", () => {
+            const modal = bootstrap.Modal.getInstance(document.getElementById("parkModal"));
+            modal.hide();
+        });
+    </script>
+    <script>
+        // Datos de los parques nacionales de Costa Rica
+        const parques = [
+            {
+                id: 1,
+                nombre: "Parque Nacional Manuel Antonio",
+                descripcion: "Famoso por sus playas de arena blanca, aguas cristalinas y denso bosque tropical. Hogar de una gran diversidad de fauna incluyendo monos, perezosos y aves exóticas.",
+                adaptado: true,
+                bajotecho: false,
+                rampa: true,
+                largo: false
+            },
+            {
+                id: 2,
+                nombre: "Parque Nacional Volcán Poás",
+                descripcion: "Destaca por su impresionante cráter activo, uno de los más grandes del mundo. Ofrece senderos a través de bosque nuboso con una gran variedad de flora y fauna.",
+                adaptado: true,
+                bajotecho: false,
+                rampa: false,
+                largo: true
+            },
+            {
+                id: 3,
+                nombre: "Parque Nacional Tortuguero",
+                descripcion: "Conocido como la 'Amazonía de Costa Rica', este parque es famoso por el desove de tortugas marinas y su red de canales navegables a través de la selva tropical.",
+                adaptado: false,
+                bajotecho: false,
+                rampa: false,
+                largo: true
+            },
+            {
+                id: 4,
+                nombre: "Parque Nacional Corcovado",
+                descripcion: "Considerado uno de los lugares con mayor biodiversidad en el planeta. Alberga jaguares, tapires, monos y una increíble variedad de aves y plantas.",
+                adaptado: false,
+                bajotecho: false,
+                rampa: false,
+                largo: true
+            },
+            {
+                id: 5,
+                nombre: "Parque Nacional Rincón de la Vieja",
+                descripcion: "Volcán activo con fumarolas, pozas de barro hirviendo y aguas termales. Ofrece una combinación única de actividad volcánica y bosque tropical seco.",
+                adaptado: true,
+                bajotecho: false,
+                rampa: true,
+                largo: true
+            },
+            {
+                id: 6,
+                nombre: "Parque Nacional Volcán Tenorio",
+                descripcion: "Hogar del famoso Río Celeste, conocido por su impresionante color azul turquesa. Cuenta con senderos que atraviesan selva tropical, cataratas y miradores naturales.",
+                adaptado: false,
+                bajotecho: false,
+                rampa: false,
+                largo: true
+            }
+        ];
+
+        // Variables globales
+        let parqueSeleccionado = null;
+        let metodoPagoBloqueado = false;
+        // Variables globales para fechas y control
+let fechaReservaBloqueada = false;
+let cedulasRegistradas = new Set();
+let subtotal = 0;
+
+        // Inicialización cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function () {
+            // Mostrar modal de selección de parque al cargar la página
+            const parkModal = new bootstrap.Modal(document.getElementById('parkModal'));
+            parkModal.show();
+
+            // Cargar lista de parques en el modal
+            cargarParques();
+
+            // Configurar evento para confirmar selección de parque
+            document.getElementById('confirmPark').addEventListener('click', function () {
+                if (parqueSeleccionado) {
+                    actualizarInterfazConParque(parqueSeleccionado);
+                    parkModal.hide();
+                }
+            });
+        });
+
+        // Función para cargar la lista de parques en el modal
+        function cargarParques() {
+            const parkList = document.getElementById('park-list');
+            parkList.innerHTML = '';
+
+            parques.forEach(parque => {
+                const col = document.createElement('div');
+                col.className = 'col-md-6 mb-3';
+
+                const card = document.createElement('div');
+                card.className = 'park-card';
+                card.dataset.id = parque.id;
+
+                card.innerHTML = `
+                <div class="park-name">${parque.nombre}</div>
+                <div class="park-description">${parque.descripcion}</div>
+                <div class="park-features mt-2">
+                    <small>
+                        ${parque.adaptado ? '✓ Sendero adaptado' : ''} 
+                        ${parque.bajotecho ? '✓ Bajo techo' : ''} 
+                        ${parque.rampa ? '✓ Acceso con rampa' : ''} 
+                        ${parque.largo ? '✓ Sendero largo' : ''}
+                    </small>
+                </div>
+            `;
+
+                card.addEventListener('click', function () {
+                    // Remover selección anterior
+                    document.querySelectorAll('.park-card').forEach(c => c.classList.remove('selected'));
+                    // Seleccionar actual
+                    card.classList.add('selected');
+                    parqueSeleccionado = parque;
+                    document.getElementById('confirmPark').disabled = false;
+                });
+
+                col.appendChild(card);
+                parkList.appendChild(col);
+            });
+        }
+
+        // Función para actualizar la interfaz con la información del parque seleccionado
+        function actualizarInterfazConParque(parque) {
+            // Actualizar nombre del parque
+            document.getElementById('park-name').textContent = parque.nombre;
+
+            // Actualizar descripción
+            document.getElementById('park-description').innerHTML = `<p class="small">${parque.descripcion}</p>`;
+
+            // Actualizar checkboxes según características del parque
+            document.getElementById('chkAdaptado').checked = parque.adaptado;
+            document.getElementById('chkBajotecho').checked = parque.bajotecho;
+            document.getElementById('chkRampa').checked = parque.rampa;
+            document.getElementById('chkLargo').checked = parque.largo;
+
+            // Actualizar estado de aptitud
+            updateSuitability();
+
+            // Habilitar botón de registrar
+            document.getElementById('btnRegistrar').disabled = false;
+        }
+
+        // Funcionalidad JS para interacción mínima
+        (function () {
+            const chkAdaptado = document.getElementById('chkAdaptado');
+            const chkBajotecho = document.getElementById('chkBajotecho');
+            const chkRampa = document.getElementById('chkRampa');
+            const chkLargo = document.getElementById('chkLargo');
+            const siteSuitability = document.getElementById('site-suitability');
+
+            function updateSuitability() {
+                const adapted = chkAdaptado.checked;
+                const ramp = chkRampa.checked;
+                const roof = chkBajotecho.checked;
+
+                let html = '';
+                if (adapted && ramp) {
+                    html += '<span class="status-badge status-ok">Apto para personas con discapacidad</span>';
+                } else if (!adapted && (ramp || roof)) {
+                    html += '<span class="status-badge status-warn">Parcialmente apto — revisar condiciones</span>';
+                } else {
+                    html += '<span class="status-badge status-bad">No apto para personas con discapacidad</span>';
+                }
+
+                html += ' <div class="mt-small">';
+                if (roof) {
+                    html += '<small>Protegido: bajo techo</small>';
+                } else {
+                    html += '<small>Expuesto al clima: sin techo</small>';
+                }
+                html += '</div>';
+
+                siteSuitability.innerHTML = html;
+            }
+
+            // Payment fields toggle
+            const inputPago = document.getElementById('inputPago');
+            const cardFields = document.querySelector('.card-fields');
+            const sinpeFields = document.querySelector('.sinpe-fields');
+
+            function updatePaymentArea() {
+                const val = inputPago.value;
+                if (val === 'Tarjeta') {
+                    cardFields.style.display = 'block';
+                    sinpeFields.style.display = 'none';
+                } else if (val === 'SINPE') {
+                    cardFields.style.display = 'none';
+                    sinpeFields.style.display = 'block';
+                } else {
+                    cardFields.style.display = 'none';
+                    sinpeFields.style.display = 'none';
+                }
+            }
+
+            inputPago.addEventListener('change', function () {
+                if (!metodoPagoBloqueado) {
+                    updatePaymentArea();
+                }
+            });
+
+            updatePaymentArea();
+
+            // Registro de visitantes
+            const btnRegistrar = document.getElementById('btnRegistrar');
+            const listaVisitantes = document.getElementById('listaVisitantes');
+            const btnContinuar = document.getElementById('btnContinuar');
+
+            function createVisitorElement(nombre, idText, metodo, paymentSummary, fotoDataUrl) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'visitante-item';
+
+                const img = document.createElement('img');
+                img.alt = nombre;
+                img.src = fotoDataUrl || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><rect width="48" height="48" fill="%23f1f1f1"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="%23888" font-size="10">No foto</text></svg>';
+
+                const info = document.createElement('div');
+                info.className = 'visitante-info';
+
+                const strong = document.createElement('div');
+                strong.innerHTML = '<strong>' + escapeHtml(nombre) + '</strong>';
+
+                const small = document.createElement('div');
+                small.innerHTML = '<small>' + escapeHtml(idText) + ' • ' + escapeHtml(metodo) + (paymentSummary ? (' • ' + escapeHtml(paymentSummary)) : '') + '</small>';
+
+                info.appendChild(strong);
+                info.appendChild(small);
+
+                wrapper.appendChild(img);
+                wrapper.appendChild(info);
+
+                return wrapper;
+            }
+
+            function escapeHtml(text) {
+                const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+                return String(text).replace(/[&<>"']/g, function (m) { return map[m]; });
+            }
+
+            function maskCardNumber(number) {
+                const digits = (number || '').replace(/\D/g, '');
+                if (digits.length >= 4) {
+                    return '****' + digits.slice(-4);
+                }
+                return '****';
+            }
+
+// Reemplazar completamente el evento click del botón registrar
+btnRegistrar.addEventListener('click', function () {
+    const nombre = document.getElementById('inputNombre').value.trim();
+    const idText = document.getElementById('inputId').value.trim();
+    const metodo = document.getElementById('inputPago').value;
+    const fechaNacimiento = document.getElementById('inputFechaNacimiento').value;
+    const fechaReserva = document.getElementById('inputFechaReserva').value;
+
+    // Validaciones
+    if (!fechaNacimiento) { alert('Por favor seleccione la fecha de nacimiento.'); return; }
+    if (!fechaReserva) { alert('Por favor seleccione la fecha de reserva.'); return; }
+    if (!metodo) { alert('Por favor selecciona un método de pago.'); return; }
+
+    // Validar cédula no repetida
+    if (cedulasRegistradas.has(idText)) {
+        alert('Esta cédula/pasaporte ya ha sido registrada.');
+        return;
+    }
+
+    // Validar fecha de nacimiento no futura
+    if (!validarFechaNacimiento(fechaNacimiento)) {
+        alert('La fecha de nacimiento no puede ser futura.');
+        return;
+    }
+
+    // Calcular precio
+    const { precio, categoria } = calcularPrecio();
+
+    // Payment validation & summary
+    let paymentSummary = '';
+    if (metodo === 'Tarjeta') {
+        const cardNumber = document.getElementById('cardNumber').value.trim();
+        const cardExpiry = document.getElementById('cardExpiry').value.trim();
+        const cardCvv = document.getElementById('cardCvv').value.trim();
+
+        if (!cardNumber) { alert('Ingrese el número de tarjeta.'); return; }
+        if (!cardExpiry) { alert('Ingrese la fecha de vencimiento.'); return; }
+        if (!cardCvv) { alert('Ingrese el CVV.'); return; }
+
+        paymentSummary = 'Tarjeta ' + maskCardNumber(cardNumber);
+    } else if (metodo === 'SINPE') {
+        paymentSummary = 'SINPE 6450-8899';
+    }
+
+    // Bloquear método de pago y fecha de reserva después del primer registro
+    if (!metodoPagoBloqueado) {
+        metodoPagoBloqueado = true;
+        inputPago.disabled = true;
+    }
+    if (!fechaReservaBloqueada) {
+        fechaReservaBloqueada = true;
+        document.getElementById('inputFechaReserva').disabled = true;
+    }
+
+    // Agregar cédula al conjunto de registradas
+    cedulasRegistradas.add(idText);
+
+    // Actualizar subtotal
+    subtotal += precio;
+    actualizarSubtotal();
+
+    const el = createVisitorElementConPrecio(nombre, idText, metodo, paymentSummary, precio, categoria, null);
+    listaVisitantes.appendChild(el);
+    clearForm();
+    btnContinuar.disabled = false;
+});
+
+// Función clearForm actualizada
+function clearForm() {
+    document.getElementById('inputNombre').value = '';
+    document.getElementById('inputId').value = '';
+    document.getElementById('inputFechaNacimiento').value = '';
+    
+    // No limpiar fecha de reserva si ya está bloqueada
+    if (!fechaReservaBloqueada) {
+        document.getElementById('inputFechaReserva').value = '';
+    }
+    
+    // Resetear precio individual
+    document.getElementById('precioReserva').textContent = '₡0';
+    document.getElementById('categoriaPrecio').textContent = '';
+
+    // No limpiar el método de pago si ya está bloqueado
+    if (!metodoPagoBloqueado) {
+        document.getElementById('inputPago').value = '';
+        document.getElementById('cardNumber').value = '';
+        document.getElementById('cardExpiry').value = '';
+        document.getElementById('cardCvv').value = '';
+        updatePaymentArea();
+    }
+}
+
+btnContinuar.addEventListener('click', function () {
+    alert('Se confirmará el pago. Subtotal: ₡' + subtotal.toLocaleString('es-CR'));
+});
+// Precios según SINAC (valores aproximados en colones costarricenses)
+const PRECIOS = {
+    adultoNacional: 1500,
+    adultoExtranjero: 8000,
+    nino: 0, // Menores de 12 años no pagan
+    adultoMayor: 500 // Descuento para mayores de 65 años
+};
+// Agregar después del código de precios
+let cedulasRegistradas = new Set();
+
+// Función para validar fecha de nacimiento no futura
+function validarFechaNacimiento(fecha) {
+    const hoy = new Date();
+    const fechaNac = new Date(fecha);
+    return fechaNac <= hoy;
+}
+
+// Función para actualizar el subtotal
+function actualizarSubtotal() {
+    const subtotalElement = document.getElementById('subtotalReserva');
+    if (subtotalElement) {
+        subtotalElement.textContent = `₡${subtotal.toLocaleString('es-CR')}`;
+    }
+}
+
+// Función para crear elemento de visitante con precio
+function createVisitorElementConPrecio(nombre, idText, metodo, paymentSummary, precio, categoria, fotoDataUrl) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'visitante-item';
+    wrapper.dataset.cedula = idText; // Guardar cédula para referencia
+
+    const img = document.createElement('img');
+    img.alt = nombre;
+    img.src = fotoDataUrl || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><rect width="48" height="48" fill="%23f1f1f1"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="%23888" font-size="10">No foto</text></svg>';
+
+    const info = document.createElement('div');
+    info.className = 'visitante-info flex-grow-1';
+
+    const strong = document.createElement('div');
+    strong.innerHTML = '<strong>' + escapeHtml(nombre) + '</strong>';
+
+    const small = document.createElement('div');
+    small.innerHTML = '<small>' + escapeHtml(idText) + ' • ' + escapeHtml(metodo) + 
+                     (paymentSummary ? (' • ' + escapeHtml(paymentSummary)) : '') + 
+                     ' • ' + escapeHtml(`₡${precio.toLocaleString('es-CR')} (${categoria})`) + '</small>';
+
+    info.appendChild(strong);
+    info.appendChild(small);
+
+    // Botón de eliminar
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'btn btn-sm btn-outline-danger';
+    deleteBtn.innerHTML = '<i class="bi bi-x"></i>';
+    deleteBtn.title = 'Eliminar visitante';
+    deleteBtn.addEventListener('click', function() {
+        if (confirm('¿Está seguro de eliminar este visitante?')) {
+            // Remover del Set de cédulas registradas
+            cedulasRegistradas.delete(idText);
+            
+            // Restar del subtotal
+            subtotal -= precio;
+            actualizarSubtotal();
+            
+            // Eliminar elemento visual
+            wrapper.remove();
+            
+            // Verificar si quedan visitantes para habilitar/deshabilitar continuar
+            btnContinuar.disabled = listaVisitantes.children.length === 0;
+        }
+    });
+
+    wrapper.appendChild(img);
+    wrapper.appendChild(info);
+    wrapper.appendChild(deleteBtn);
+
+    return wrapper;
+}
+
+// Modificar la función calcularPrecio para que retorne el precio y categoría
+function calcularPrecio() {
+    const fechaNacimiento = document.getElementById('inputFechaNacimiento').value;
+    if (!fechaNacimiento) return { precio: 0, categoria: '' };
+
+    // Validar que la fecha de nacimiento no sea futura
+    if (!validarFechaNacimiento(fechaNacimiento)) {
+        alert('La fecha de nacimiento no puede ser futura.');
+        document.getElementById('inputFechaNacimiento').value = '';
+        return { precio: 0, categoria: '' };
+    }
+
+    const nacimiento = new Date(fechaNacimiento);
+    const hoy = new Date();
+    
+    let edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const mes = hoy.getMonth() - nacimiento.getMonth();
+    
+    if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+        edad--;
+    }
+
+    let precio = 0;
+    let categoria = '';
+
+    if (edad < 12) {
+        precio = PRECIOS.nino;
+        categoria = 'Niño (No paga)';
+    } else if (edad >= 65) {
+        precio = PRECIOS.adultoMayor;
+        categoria = 'Adulto Mayor';
+    } else {
+        const idText = document.getElementById('inputId').value.trim();
+        const esNacional = /^\d{1}-?\d{4}-?\d{4}$/.test(idText);
+        
+        if (esNacional) {
+            precio = PRECIOS.adultoNacional;
+            categoria = 'Adulto Nacional';
+        } else {
+            precio = PRECIOS.adultoExtranjero;
+            categoria = 'Adulto Extranjero';
+        }
+    }
+
+    document.getElementById('precioReserva').textContent = `₡${precio.toLocaleString('es-CR')}`;
+    document.getElementById('categoriaPrecio').textContent = categoria;
+
+    return { precio, categoria };
+}
+
+// Modificar la función de registro original
+function registrarVisitanteOriginal() {
+    const nombre = document.getElementById('inputNombre').value.trim();
+    const idText = document.getElementById('inputId').value.trim();
+    const metodo = document.getElementById('inputPago').value;
+
+    if (!metodo) { alert('Por favor selecciona un método de pago.'); return; }
+
+    // Validar que la cédula no esté repetida
+    if (cedulasRegistradas.has(idText)) {
+        alert('Esta cédula/pasaporte ya ha sido registrada.');
+        return;
+    }
+
+    // Calcular precio
+    const { precio, categoria } = calcularPrecio();
+
+    // Payment validation & summary
+    let paymentSummary = '';
+    if (metodo === 'Tarjeta') {
+        const cardNumber = document.getElementById('cardNumber').value.trim();
+        const cardExpiry = document.getElementById('cardExpiry').value.trim();
+        const cardCvv = document.getElementById('cardCvv').value.trim();
+
+        if (!cardNumber) { alert('Ingrese el número de tarjeta.'); return; }
+        if (!cardExpiry) { alert('Ingrese la fecha de vencimiento.'); return; }
+        if (!cardCvv) { alert('Ingrese el CVV.'); return; }
+
+        paymentSummary = 'Tarjeta ' + maskCardNumber(cardNumber);
+    } else if (metodo === 'SINPE') {
+        paymentSummary = 'SINPE 6450-8899';
+    }
+
+    // Bloquear el método de pago después del primer registro
+    if (!metodoPagoBloqueado) {
+        metodoPagoBloqueado = true;
+        inputPago.disabled = true;
+    }
+
+    // Agregar cédula al conjunto de registradas
+    cedulasRegistradas.add(idText);
+
+    // Actualizar subtotal
+    subtotal += precio;
+    actualizarSubtotal();
+
+    const el = createVisitorElementConPrecio(nombre, idText, metodo, paymentSummary, precio, categoria, null);
+    listaVisitantes.appendChild(el);
+    clearForm();
+    btnContinuar.disabled = false;
+}
+
+// Agregar elemento para mostrar subtotal en la interfaz (colocar después del precio individual)
+const subtotalHTML = `
+<div class="mb-2">
+    <label class="form-label">Subtotal de Reserva</label>
+    <div class="d-flex justify-content-between align-items-center p-2 border rounded bg-light">
+        <span id="subtotalReserva">₡0</span>
+        <small class="text-muted">Total acumulado</small>
+    </div>
+</div>
+`;
+
+// Insertar el subtotal después del precio individual
+document.querySelector('#precioReserva').closest('.mb-2').insertAdjacentHTML('afterend', subtotalHTML);
+
+// Guardar referencia a la función original de registro
+function registrarVisitanteOriginal() {
+    const nombre = document.getElementById('inputNombre').value.trim();
+    const idText = document.getElementById('inputId').value.trim();
+    const metodo = document.getElementById('inputPago').value;
+
+    if (!metodo) { alert('Por favor selecciona un método de pago.'); return; }
+
+    // Payment validation & summary
+    let paymentSummary = '';
+    if (metodo === 'Tarjeta') {
+        const cardNumber = document.getElementById('cardNumber').value.trim();
+        const cardExpiry = document.getElementById('cardExpiry').value.trim();
+        const cardCvv = document.getElementById('cardCvv').value.trim();
+
+        if (!cardNumber) { alert('Ingrese el número de tarjeta.'); return; }
+        if (!cardExpiry) { alert('Ingrese la fecha de vencimiento.'); return; }
+        if (!cardCvv) { alert('Ingrese el CVV.'); return; }
+
+        paymentSummary = 'Tarjeta ' + maskCardNumber(cardNumber);
+    } else if (metodo === 'SINPE') {
+        paymentSummary = 'SINPE 6450-8899';
+    }
+
+    // Bloquear el método de pago después del primer registro
+    if (!metodoPagoBloqueado) {
+        metodoPagoBloqueado = true;
+        inputPago.disabled = true;
+    }
+
+// Calcular precio
+const { precio, categoria } = calcularPrecio();
+
+// Agregar cédula al conjunto de registradas
+cedulasRegistradas.add(idText);
+
+// Actualizar subtotal
+subtotal += precio;
+actualizarSubtotal();
+
+const el = createVisitorElementConPrecio(nombre, idText, metodo, paymentSummary, precio, categoria, null);
+    listaVisitantes.appendChild(el);
+    clearForm();
+    btnContinuar.disabled = false;
+}
+
+// Modificar la función clearForm para resetear las fechas apropiadamente
+function clearForm() {
+    document.getElementById('inputNombre').value = '';
+    document.getElementById('inputId').value = '';
+    document.getElementById('inputFechaNacimiento').value = '';
+    
+    // No limpiar fecha de reserva si ya está bloqueada
+    if (!fechaReservaBloqueada) {
+        document.getElementById('inputFechaReserva').value = '';
+    }
+    
+    // Resetear precio
+    document.getElementById('precioReserva').textContent = '₡0';
+    document.getElementById('categoriaPrecio').textContent = '';
+
+    // No limpiar el método de pago si ya está bloqueado
+    if (!metodoPagoBloqueado) {
+        document.getElementById('inputPago').value = '';
+        document.getElementById('cardNumber').value = '';
+        document.getElementById('cardExpiry').value = '';
+        document.getElementById('cardCvv').value = '';
+        updatePaymentArea();
+    }
+}
+
+// También agregar evento para calcular precio cuando cambie la cédula
+document.getElementById('inputId').addEventListener('input', function() {
+    if (document.getElementById('inputFechaNacimiento').value) {
+        calcularPrecio();
+    }
+});
+// Inicializar el evento para la fecha de nacimiento
+document.getElementById('inputFechaNacimiento').addEventListener('change', function() {
+    const fecha = this.value;
+    if (fecha && !validarFechaNacimiento(fecha)) {
+        alert('La fecha de nacimiento no puede ser futura.');
+        this.value = '';
+    } else {
+        calcularPrecio();
+    }
+});
+        })();
+    </script>
+    <!-- --------------------------- -->
+    <!-- SCRIPTS DEL LOGIN COMPLETO -->
+    <!-- --------------------------- -->
+
+    <script>
+        // Base simulada
+        let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [
+            { email: "admin@sinac.go.cr", password: "123456", nombre: "Administrador SINAC" },
+            { email: "usuario@correo.com", password: "sinac2024", nombre: "Usuario General" }
+        ];
+        localStorage.setItem("usuarios", JSON.stringify(usuarios));
+
+        // Mostrar alerta
+        function mostrarMensaje(msg, tipo = "danger") {
+            const alerta = document.querySelector("#alerta");
+            alerta.className = "alert alert-" + tipo;
+            alerta.textContent = msg;
+            alerta.style.display = "block";
+        }
+
+        // LOGIN
+        document.querySelector("#btnLogin").addEventListener("click", function () {
+            const email = document.querySelector("#email").value;
+            const pass = document.querySelector("#password").value;
+
+            const userFound = usuarios.find(u => u.email === email && u.password === pass);
+
+            if (!userFound) {
+                mostrarMensaje("❌ Credenciales incorrectas.");
+                return;
+            }
+
+            localStorage.setItem("usuarioActual", JSON.stringify(userFound));
+            window.location.href = "index.html";
+        });
+
+        // REGISTRO
+        document.querySelector("#btnRegistro").addEventListener("click", function () {
+            const nom = document.querySelector("#regNombre").value;
+            const cor = document.querySelector("#regCorreo").value;
+            const p1 = document.querySelector("#regPass1").value;
+            const p2 = document.querySelector("#regPass2").value;
+
+            if (p1 !== p2) {
+                mostrarMensaje("❌ Las contraseñas no coinciden.");
+                return;
+            }
+
+            if (usuarios.find(u => u.email === cor)) {
+                mostrarMensaje("❌ El correo ya existe.");
+                return;
+            }
+
+            usuarios.push({ nombre: nom, email: cor, password: p1 });
+
+            localStorage.setItem("usuarios", JSON.stringify(usuarios));
+
+            mostrarMensaje("✔ Registro exitoso. Ahora inicia sesión.", "success");
+        });
+
+        // CAMBIO ENTRE LOGIN / REGISTRO / RECUPERAR
+        document.querySelector("#tabLogin").addEventListener("click", () => {
+            formLogin.style.display = "block";
+            formRegistro.style.display = "none";
+            formRecuperar.style.display = "none";
+
+            tabLogin.classList.add("tab-active");
+            tabReg.classList.remove("tab-active");
+        });
+
+        document.querySelector("#tabReg").addEventListener("click", () => {
+            formLogin.style.display = "none";
+            formRegistro.style.display = "block";
+            formRecuperar.style.display = "none";
+
+            tabReg.classList.add("tab-active");
+            tabLogin.classList.remove("tab-active");
+        });
+
+        document.querySelector("#recuperarLink").addEventListener("click", () => {
+            formLogin.style.display = "none";
+            formRegistro.style.display = "none";
+            formRecuperar.style.display = "block";
+        });
+
+        document.querySelector("#volverLogin").addEventListener("click", () => {
+            formLogin.style.display = "block";
+            formRegistro.style.display = "none";
+            formRecuperar.style.display = "none";
+        });
+
+        // COLAPSAR/EXPANDIR CONTRASEÑA
+        document.querySelector("#togglePass").addEventListener("click", () => {
+            const pass = document.querySelector("#password");
+            if (pass.type === "password") {
+                pass.type = "text";
+                togglePass.classList.replace("bi-eye", "bi-eye-slash");
+            } else {
+                pass.type = "password";
+                togglePass.classList.replace("bi-eye-slash", "bi-eye");
+            }
+        });
+    </script>
+
+    <!-- SCRIPT UNIVERSAL DE SESIÓN -->
+    <script>
+        const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
+        const loginItem = document.querySelector("#navLogin");
+        const usuarioItem = document.querySelector("#navUsuario");
+        const usuarioLink = usuarioItem ? usuarioItem.querySelector("a") : null;
+        const logoutItem = document.querySelector("#navLogout");
+
+        if (usuario) {
+            if (loginItem) loginItem.style.display = "none";
+            if (usuarioItem) usuarioItem.style.display = "block";
+            if (usuarioLink) usuarioLink.textContent = "Hola, " + usuario.nombre.split(" ")[0];
+            if (logoutItem) logoutItem.style.display = "block";
+        } else {
+            if (usuarioItem) usuarioItem.style.display = "none";
+            if (logoutItem) logoutItem.style.display = "none";
+        }
+
+        // Logout
+        if (logoutItem) {
+            logoutItem.addEventListener("click", () => {
+                localStorage.removeItem("usuarioActual");
+                window.location.href = "Login.html";
+            });
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
